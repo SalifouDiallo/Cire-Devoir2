@@ -19,7 +19,19 @@ steps:
     resourceGroupName: 'tpfinal'
     location: 'Canada Central'
     templateLocation: 'Linked artifact'
+    csmFile: '$(Build.SourcesDirectory)\Cire-Devoir2\azuredeploy.json'
+    csmParametersFile: '$(Build.SourcesDirectory)\Cire-Devoir2\azuredeploy.parameters.json'
+    deploymentMode: 'Incremental'
+
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: 'Abonnement Azure PAYG(0673c009-6d00-4254-9178-35fed48c87be)'
+    subscriptionId: '0673c009-6d00-4254-9178-35fed48c87be'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: 'tpfinal'
+    location: 'Canada Central'
+    templateLocation: 'Linked artifact'
     csmFile: '$(Build.SourcesDirectory)\Cire-Devoir2\BlobTrigger\azuredeploy.json'
     csmParametersFile: '$(Build.SourcesDirectory)\Cire-Devoir2\BlobTrigger\azuredeploy.parameters.json'
     deploymentMode: 'Incremental'
-
