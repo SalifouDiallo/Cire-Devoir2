@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "appInsights1": {
+      "type": "appInsights.sdk"
+    },
+    "storage1": {
+      "type": "storage.emulator",
+      "connectionId": "AzureWebJobsStorage"
+    },
+    "secrets1": {
+      "type": "secrets.user"
+    },
+    "storage2": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.ServiceLinker/locations/eastus/connectors/AzureWebJobsStorage1_C5819DD7BF, /subscriptions/0673c009-6d00-4254-9178-35fed48c87be/resourceGroups/tpfinal/providers/Microsoft.ServiceLinker/locations/eastus/connectors/AzureWebJobsStorage1_CB7620B3C5",
+      "secretStore": "LocalSecretsFile",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/storageprojetfinal",
+      "type": "storage.azure",
+      "connectionId": "AzureWebJobsStorage1",
+      "dynamicId": null
+    }
+  }
+}

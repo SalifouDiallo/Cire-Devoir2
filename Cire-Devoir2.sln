@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35506.116 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "Cire-Devoir2", "Cire-Devoir2\Cire-Devoir2.deployproj", "{DB06278B-DDF3-44F6-8408-93280A3DF8B8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AzureFunction", "AzureFunction", "{8EE4C1A2-0D34-4E92-92A0-9181D13E25DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlobTrigger", "BlobTrigger\BlobTrigger.csproj", "{806A2C0F-B1CE-452F-873E-A8856428697E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DB06278B-DDF3-44F6-8408-93280A3DF8B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB06278B-DDF3-44F6-8408-93280A3DF8B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB06278B-DDF3-44F6-8408-93280A3DF8B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB06278B-DDF3-44F6-8408-93280A3DF8B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{806A2C0F-B1CE-452F-873E-A8856428697E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{806A2C0F-B1CE-452F-873E-A8856428697E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{806A2C0F-B1CE-452F-873E-A8856428697E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{806A2C0F-B1CE-452F-873E-A8856428697E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{806A2C0F-B1CE-452F-873E-A8856428697E} = {8EE4C1A2-0D34-4E92-92A0-9181D13E25DA}
+	EndGlobalSection
+EndGlobal
