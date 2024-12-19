@@ -19,6 +19,7 @@ steps:
     resourceGroupName: 'tpfinal'
     location: 'Canada Central'
     templateLocation: 'Linked artifact'
-    csmFile: '$(Build.SourcesDirectory)\Cire-Devoir2\azuredeploy.json'
-    csmParametersFile: '$(Build.SourcesDirectory)\Cire-Devoir2\azuredeploy.parameters.json'
+    csmFile: '$(Build.SourcesDirectory)\Cire-Devoir2\BlobTrigger\azuredeploy.json'
+    csmParametersFile: '$(Build.SourcesDirectory)\Cire-Devoir2\BlobTrigger\azuredeploy.parameters.json'
     deploymentMode: 'Incremental'
+
