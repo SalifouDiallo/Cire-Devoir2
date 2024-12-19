@@ -4,16 +4,21 @@
 # https://aka.ms/yaml
 
 trigger:
-- master
+- master  # Declenche le pipeline a chaque modification sur la branche 'master'.
 
-pool: "Default"
+pool: 'default' # Definit le pool d'agents par defaut pour executer les taches.
 
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+steps: 
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: 'Abonnement Azure PAYG(0673c009-6d00-4254-9178-35fed48c87be)'
+    subscriptionId: '0673c009-6d00-4254-9178-35fed48c87be'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: 'tpfinal'
+    location: 'Canada Central'
+    templateLocation: 'Linked artifact'
+    csmFile: '$(Build.SourcesDirectory)\Cire-Devoir2\azuredeploy.json'
+    csmParametersFile: '$(Build.SourcesDirectory)\Cire-Devoir2\azuredeploy.parameters.json'
+    deploymentMode: 'Incremental'
