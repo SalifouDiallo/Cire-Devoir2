@@ -2,8 +2,7 @@
 trigger:
 - master  # Déclenchement automatique sur la branche master
 
-pool: 
-  vmImage: 'windows-latest'  # Utilise un agent basé sur Windows
+pool: "Default"
 
 variables:
   resourceGroupName: 'tpfinal'  # Nom du groupe de ressources
