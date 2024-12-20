@@ -67,7 +67,7 @@ stages:
       displayName: Publier les fonctions Azure
       inputs:
         command: 'publish'
-        projects: '$(Build.SourcesDirectory)/Cire-Devoir2/BlobTrigger/*.csproj'
+        projects: '$(Build.SourcesDirectory)/Cire-Devoir2/FunctionApp/*.csproj'
         arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
         zipAfterPublish: true
 
