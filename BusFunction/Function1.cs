@@ -2,79 +2,66 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
-using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
-namespace BusFunction
+namespace ServiceBusTrigger
 {
-    public class Function1
+    public class Function2
     {
-        private readonly ILogger<Function1> _logger;
+        private readonly ILogger<Function2> _logger;
 
-        public Function1(ILogger<Function1> logger)
+        public Function2(ILogger<Function2> logger)
         {
             _logger = logger;
         }
 
-        [Function(nameof(Function1))]
+        [Function(nameof(Function2))]
         public async Task Run(
-            [ServiceBusTrigger("azure-webjobs-secrets", Connection = "AzureWebJobsStorage2")]
-            ServiceBusReceivedMessage message,
-            ServiceBusMessageActions messageActions)
+            [ServiceBusTrigger("file-processing-queue", Connection = "AzureServiceBusConnection")] string fileName)
         {
+            _logger.LogInformation($"Service Bus Trigger activated for file: {fileName}");
+
             try
             {
-                // Extraire le nom du fichier depuis le message
-                string fileName = message.Body.ToString();
-                _logger.LogInformation($"Processing file: {fileName}");
+                // Configuration des conteneurs source et destination
+                var storageConnectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage1");
+                var sourceContainerName = "images";
+                var destinationContainerName = "processed-images";
 
-                // Configuration des connexions Azure Storage
-                string storageConnectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage2");
-                string sourceContainerName = "images";
-                string destinationContainerName = "processed-images";
-
-                // Initialiser les clients pour les conteneurs source et destination
                 var blobServiceClient = new BlobServiceClient(storageConnectionString);
-                var sourceContainerClient = blobServiceClient.GetBlobContainerClient(sourceContainerName);
-                var destinationContainerClient = blobServiceClient.GetBlobContainerClient(destinationContainerName);
+                var sourceBlobClient = blobServiceClient.GetBlobContainerClient(sourceContainerName).GetBlobClient(fileName);
+                var destinationBlobClient = blobServiceClient.GetBlobContainerClient(destinationContainerName).GetBlobClient(fileName);
 
-                // Télécharger le fichier blob source
-                var sourceBlobClient = sourceContainerClient.GetBlobClient(fileName);
+                // Télécharger le fichier source
                 var tempFilePath = Path.GetTempFileName();
                 await sourceBlobClient.DownloadToAsync(tempFilePath);
-                _logger.LogInformation($"File downloaded: {fileName}");
+                _logger.LogInformation($"File {fileName} downloaded for processing.");
 
-                // Traiter le fichier (ajout d'un watermark simulé)
+                // Simuler une opération sur le fichier (ex. ajout d'un watermark ou redimensionnement)
                 var processedFilePath = Path.GetTempFileName();
                 File.WriteAllText(processedFilePath, $"Processed file: {fileName} at {DateTime.UtcNow}");
-                _logger.LogInformation($"File processed: {fileName}");
+                _logger.LogInformation($"File {fileName} has been processed.");
 
                 // Télécharger le fichier traité vers le conteneur de destination
-                var destinationBlobClient = destinationContainerClient.GetBlobClient(fileName);
                 using (var fileStream = File.OpenRead(processedFilePath))
                 {
                     await destinationBlobClient.UploadAsync(fileStream, overwrite: true);
                 }
-                _logger.LogInformation($"Processed file uploaded: {fileName}");
-
-                // Supprimer le fichier temporaire local
-                File.Delete(tempFilePath);
-                File.Delete(processedFilePath);
+                _logger.LogInformation($"File {fileName} uploaded to container: {destinationContainerName}");
 
                 // Supprimer le fichier original du conteneur source
                 await sourceBlobClient.DeleteIfExistsAsync();
-                _logger.LogInformation($"Original file deleted: {fileName}");
+                _logger.LogInformation($"File {fileName} deleted from container: {sourceContainerName}");
 
-                // Marquer le message comme complété
-                await messageActions.CompleteMessageAsync(message);
-                _logger.LogInformation("Message completed.");
+                // Supprimer les fichiers temporaires locaux
+                File.Delete(tempFilePath);
+                File.Delete(processedFilePath);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error processing message: {ex.Message}");
-                // Message non complété, il reviendra dans la file d'attente (selon la configuration).
-                throw;
+                _logger.LogError($"Error processing file {fileName}: {ex.Message}");
+                throw; // Relance l'exception pour des tentatives ultérieures
             }
         }
     }
