@@ -31,8 +31,8 @@ stages:
         resourceGroupName: '$(resourceGroupName)'
         location: '$(rgLocation)'
         templateLocation: 'Linked artifact'
-        csmFile: '$(Build.SourcesDirectory)/azuredeploy.json'  # ARM Template
-        csmParametersFile: '$(Build.SourcesDirectory)/azuredeploy.parameters.json'  # Paramètres ARM
+        csmFile: '$(Build.SourcesDirectory)/Cire-Devoir2/azuredeploy.json'  # ARM Template
+        csmParametersFile: '$(Build.SourcesDirectory)/Cire-Devoir2/azuredeploy.parameters.json'  # Paramètres ARM
         deploymentMode: 'Incremental'
 
     - script: |
@@ -54,20 +54,20 @@ stages:
       displayName: Restaurer les dépendances
       inputs:
         command: 'restore'
-        projects: '$(Build.SourcesDirectory)/BlobTrigger/*.csproj'
+        projects: '$(Build.SourcesDirectory)/Cire-Devoir2/BlobTrigger/*.csproj'
 
     - task: DotNetCoreCLI@2
       displayName: Compiler les fonctions Azure
       inputs:
         command: 'build'
-        projects: '$(Build.SourcesDirectory)/BlobTrigger/*.csproj'
+        projects: '$(Build.SourcesDirectory)/Cire-Devoir2/BlobTrigger/*.csproj'
         arguments: '--configuration Release --output $(Build.BinariesDirectory)'
 
     - task: DotNetCoreCLI@2
       displayName: Publier les fonctions Azure
       inputs:
         command: 'publish'
-        projects: '$(Build.SourcesDirectory)/BlobTrigger/*.csproj'
+        projects: '$(Build.SourcesDirectory)/Cire-Devoir2/BlobTrigger/*.csproj'
         arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
         zipAfterPublish: true
 
