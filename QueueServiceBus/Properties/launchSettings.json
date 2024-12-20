@@ -1,8 +1,8 @@
 {
   "profiles": {
-    "BusFunction": {
+    "QueueServiceBus": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7040",
+      "commandLineArgs": "--port 7094",
       "launchBrowser": false
     }
   }
