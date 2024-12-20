@@ -1,24 +1,104 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
+# Pipeline Azure DevOps pour déployer l'infrastructure et l'application Azure Function
 trigger:
-- master  # Declenche le pipeline a chaque modification sur la branche 'master'.
+- master  # Déclenchement automatique sur la branche master
 
-pool: 'default' # Definit le pool d'agents par defaut pour executer les taches.
+pool: 
+  vmImage: 'windows-latest'  # Utilise un agent basé sur Windows
 
+variables:
+  resourceGroupName: 'tpfinal'  # Nom du groupe de ressources
+  rgLocation: 'Canada Central'  # Emplacement de la région Azure
+  AzureBlobContainerName: 'blob'  # Nom du conteneur de stockage
+  AzureBlob: 'blobfunctiontpfinal'  # Nom du compte de stockage
+  AzureFunctionAppName: 'BlobTriggerFunctionApp'  # Nom de l'Azure Function App
+  BlobString: ''  # Variable pour stocker la connexion Blob
+  AzureServiceBusConnection: ''  # Variable pour la connexion Service Bus
 
-steps: 
-- task: AzureResourceManagerTemplateDeployment@3
-  inputs:
-    deploymentScope: 'Resource Group'
-    azureResourceManagerConnection: 'Abonnement Azure PAYG(0673c009-6d00-4254-9178-35fed48c87be)'
-    subscriptionId: '0673c009-6d00-4254-9178-35fed48c87be'
-    action: 'Create Or Update Resource Group'
-    resourceGroupName: 'tpfinal'
-    location: 'Canada Central'
-    templateLocation: 'Linked artifact'
-    csmFile: '$(Build.SourcesDirectory)\Cire-Devoir2\azuredeploy.json'
-    csmParametersFile: '$(Build.SourcesDirectory)\Cire-Devoir2\azuredeploy.parameters.json'
-    deploymentMode: 'Incremental'
+stages:
+- stage: DeployInfrastructure
+  displayName: Déploiement de l'infrastructure
+  jobs:
+  - job: DeployInfrastructure
+    displayName: Déployer les ressources Azure
+    steps:
+    - task: AzureResourceManagerTemplateDeployment@3
+      displayName: Déployer les ressources via ARM Template
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: 'Abonnement Azure PAYG(0673c009-6d00-4254-9178-35fed48c87be)'  # Connexion à Azure
+        subscriptionId: '0673c009-6d00-4254-9178-35fed48c87be'
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroupName)'
+        location: '$(rgLocation)'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(Build.SourcesDirectory)/azuredeploy.json'  # ARM Template
+        csmParametersFile: '$(Build.SourcesDirectory)/azuredeploy.parameters.json'  # Paramètres ARM
+        deploymentMode: 'Incremental'
+
+    - script: |
+        echo ##vso[task.setvariable variable=BlobString;isOutput=true]$(deploymentOutputs.storageConnectionString.value)
+      name: AssignBlobString
+      displayName: Récupérer la connexion Blob Storage
+
+- stage: BuildAndDeployFunction
+  displayName: Compilation et déploiement des fonctions
+  dependsOn: DeployInfrastructure
+  variables:
+    BlobString: $[ dependencies.DeployInfrastructure.outputs['AssignBlobString.BlobString'] ]
+
+  jobs:
+  - job: BuildFunction
+    displayName: Compiler les fonctions Azure
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: Restaurer les dépendances
+      inputs:
+        command: 'restore'
+        projects: '$(Build.SourcesDirectory)/BlobTrigger/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: Compiler les fonctions Azure
+      inputs:
+        command: 'build'
+        projects: '$(Build.SourcesDirectory)/BlobTrigger/*.csproj'
+        arguments: '--configuration Release --output $(Build.BinariesDirectory)'
+
+    - task: DotNetCoreCLI@2
+      displayName: Publier les fonctions Azure
+      inputs:
+        command: 'publish'
+        projects: '$(Build.SourcesDirectory)/BlobTrigger/*.csproj'
+        arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publier les artefacts de build
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+
+  - job: DeployFunction
+    displayName: Déployer les fonctions Azure
+    dependsOn: BuildFunction
+
+    steps:
+    - task: DownloadBuildArtifacts@1
+      displayName: Télécharger les artefacts de build
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'drop'
+        downloadPath: '$(System.ArtifactsDirectory)'
+
+    - task: AzureFunctionApp@2
+      displayName: Déployer sur Azure Function App
+      inputs:
+        connectedServiceNameARM: 'Abonnement Azure PAYG(0673c009-6d00-4254-9178-35fed48c87be)'
+        appType: 'functionApp'
+        appName: '$(AzureFunctionAppName)'
+        package: '$(System.ArtifactsDirectory)/**/*.zip'
+        deploymentMethod: 'runFromPackage'
+        appSettings: |
+          -Blob_ConnectionString $(BlobString)
+          -Blob_ConnectionString__blob "https://$(AzureBlob).blob.core.windows.net/"
+          -ServiceBus_ConnectionString $(AzureServiceBusConnection)
