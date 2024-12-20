@@ -16,7 +16,7 @@
       "location": "eastus",
       "sku": {
         "name": "Standard_RAGRS",
-        "tier": "Standard"
+        "tier": "Standard" 
       },
       "kind": "StorageV2",
       "properties": {
